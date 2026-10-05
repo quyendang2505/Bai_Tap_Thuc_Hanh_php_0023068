@@ -1,3 +1,3 @@
 <header class="header">
-    <h2>Website Của Tôi</h2>
+    <h2>Quản lý đào tạo</h2>
 </header>

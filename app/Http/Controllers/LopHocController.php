@@ -15,8 +15,28 @@ class LopHocController extends Controller
         $perPage = $request->integer('per_page', 10);
         $perPage = in_array($perPage, [10, 20, 50]) ? $perPage : 10;
 
-        $lophocs = LopHoc::paginate($perPage)->withQueryString();
-        return view('lop_hocs.index', compact('lophocs', 'perPage'));
+        $sortBy = $request->string('sort_by')->toString();
+        $sortBy = in_array($sortBy, ['id', 'ma_lop', 'ten_lop', 'giao_vien', 'si_so', 'trang_thai']) ? $sortBy : 'id';
+        $sortDirection = $request->string('sort_direction')->toString() === 'desc' ? 'desc' : 'asc';
+
+        $query = LopHoc::query();
+
+        if ($request->filled('search')) {
+            $search = $request->string('search')->toString();
+            $query->where(function ($query) use ($search) {
+                $query->where('ma_lop', 'like', "%{$search}%")
+                    ->orWhere('ten_lop', 'like', "%{$search}%")
+                    ->orWhere('giao_vien', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('trang_thai') && in_array($request->input('trang_thai'), ['0', '1'], true)) {
+            $query->where('trang_thai', $request->input('trang_thai'));
+        }
+
+        $lophocs = $query->orderBy($sortBy, $sortDirection)->paginate($perPage)->withQueryString();
+
+        return view('lop_hocs.index', compact('lophocs', 'perPage', 'sortBy', 'sortDirection'));
     }
 
     /**
